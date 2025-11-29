@@ -240,8 +240,8 @@ def predict():
 
         pred = model.predict(texto_vectorizado, verbose=0)[0][0]
 
-        sentimiento = "positivo" if pred >= 0.5 else "negativo"
-        confianza = float(pred if pred >= 0.5 else 1 - pred)
+        sentimiento = "positivo" if pred >= 0.6 else "negativo"
+        confianza = float(pred if pred >= 0.6 else 1 - pred)
 
         return (
             jsonify(

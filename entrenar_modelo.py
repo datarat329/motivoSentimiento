@@ -71,7 +71,12 @@ model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"]
 print("4. Iniciando entrenamiento (3 épocas)...")
 x_train_sequences = vectorize_layer(x_train_text).numpy()
 model.fit(
-    x_train_sequences, y_train, epochs=3, batch_size=32, validation_split=0.2, verbose=1
+    x_train_sequences,
+    y_train,
+    epochs=10,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=1,
 )
 
 print("5. Guardando modelos...")
