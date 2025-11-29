@@ -6,17 +6,14 @@
     <title>Clasificador de Sentimiento AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Estilos personalizados para la transición */
       .result-box {
         transition: all 0.3s ease-in-out;
       }
-      /* Color para Positivo */
       .bg-positive {
-        background-color: #38a169; /* Verde (Emerald-600) */
+        background-color: #38a169;
       }
-      /* Color para Negativo */
       .bg-negative {
-        background-color: #e53e3e; /* Rojo (Red-600) */
+        background-color: #e53e3e;
       }
     </style>
   </head>
@@ -79,7 +76,7 @@
 
     <style>
       .loader {
-        border-top-color: #3b82f6; /* Tailwind blue-500 */
+        border-top-color: #3b82f6;
         -webkit-animation: spin 1s linear infinite;
         animation: spin 1s linear infinite;
       }
@@ -104,11 +101,8 @@
     </style>
 
     <script>
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!! MODIFICA ESTA URL con la de tu API desplegada !!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       const API_URL =
-        "https://motivosentimiento-production.up.railway.app/predict"; // URL de prueba local
+        "https://motivosentimiento-production.up.railway.app/predict";
 
       const form = document.getElementById("sentiment-form");
       const reviewText = document.getElementById("review-text");
@@ -123,14 +117,12 @@
         const text = reviewText.value.trim();
         if (!text) return;
 
-        // 1. Mostrar estado de carga
         resultBox.classList.add("hidden");
         loadingSpinner.classList.remove("hidden");
         submitButton.disabled = true;
         submitButton.textContent = "Procesando...";
 
         try {
-          // 2. Enviar solicitud a la API
           const response = await fetch(API_URL, {
             method: "POST",
             headers: {
@@ -140,8 +132,6 @@
           });
 
           const data = await response.json();
-
-          // 3. Ocultar carga y mostrar resultados
           loadingSpinner.classList.add("hidden");
           resultBox.classList.remove("hidden");
 
@@ -154,7 +144,6 @@
               2
             )}%`;
 
-            // Configurar colores basados en el resultado
             resultBox.classList.remove("bg-positive", "bg-negative");
             if (sentiment === "POSITIVO") {
               resultBox.classList.add("bg-positive");
@@ -162,14 +151,12 @@
               resultBox.classList.add("bg-negative");
             }
           } else {
-            // Manejar errores de la API (ej: error 400 o 500)
             sentimentOutput.textContent = "ERROR";
             probabilityOutput.textContent = data.error || "Fallo de conexión";
             resultBox.classList.remove("bg-positive", "bg-negative");
             resultBox.classList.add("bg-red-500");
           }
         } catch (error) {
-          // Manejar errores de red/conexión
           loadingSpinner.classList.add("hidden");
           resultBox.classList.remove("hidden");
           sentimentOutput.textContent = "ERROR";
@@ -177,7 +164,6 @@
           resultBox.classList.remove("bg-positive", "bg-negative");
           resultBox.classList.add("bg-gray-500");
         } finally {
-          // 4. Restablecer botón
           submitButton.disabled = false;
           submitButton.textContent = "Analizar Sentimiento";
         }

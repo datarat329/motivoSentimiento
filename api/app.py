@@ -6,17 +6,12 @@ import os
 
 app = Flask(__name__)
 
-# --- Rutas de Archivos ---
 MODEL_PATH = "../modelo_sentimiento/classifier.keras"
 VOCABULARY_PATH = "../modelo_sentimiento/vocabulary.txt"
 
-# --- Configuración (debe coincidir con el entrenamiento) ---
 MAX_SEQUENCE_LENGTH = 100
 VOCAB_SIZE = 10000
 
-# -------------------------------
-# Cargar modelo y reconstruir vectorizador
-# -------------------------------
 model = None
 vectorize_layer = None
 
@@ -37,13 +32,10 @@ def load_models():
 
         print("Reconstruyendo vectorizador desde vocabulario...")
 
-        # Leer el vocabulario guardado
         with open(VOCABULARY_PATH, "r", encoding="utf-8") as f:
             vocabulary = [line.strip() for line in f]
 
         print(f"Vocabulario cargado: {len(vocabulary)} palabras")
-
-        # Recrear la capa TextVectorization con el vocabulario cargado
         vectorize_layer = layers.TextVectorization(
             max_tokens=VOCAB_SIZE,
             output_mode="int",
@@ -51,10 +43,8 @@ def load_models():
             standardize=custom_standardization,
         )
 
-        # Establecer el vocabulario (sin necesidad de adapt)
         vectorize_layer.set_vocabulary(vocabulary)
 
-        # Pre-compilación para optimizar primera predicción
         test_input = np.array(["test"])
         _ = vectorize_layer(test_input)
         _ = model.predict(np.zeros((1, MAX_SEQUENCE_LENGTH)), verbose=0)
@@ -76,7 +66,6 @@ def load_models():
         return False
 
 
-# Cargar modelos al iniciar la aplicación
 if not load_models():
     print("⚠️  ADVERTENCIA: La API se iniciará pero las predicciones fallarán")
 
@@ -119,14 +108,13 @@ def predict():
 
         texto = data["texto"]
 
-        # Validar que el texto no esté vacío
         if not texto or not texto.strip():
             return jsonify({"error": "El campo 'texto' no puede estar vacío."}), 400
 
         # Preparar entrada
         input_data = np.array([texto])
 
-        # 1. Vectorizar el texto (convierte string a secuencia de enteros)
+        # 1. Vectorizar el texto
         texto_vectorizado = vectorize_layer(input_data).numpy()
 
         # 2. Predicción
@@ -135,10 +123,8 @@ def predict():
         # 3. Determinar sentimiento
         sentimiento = "positivo" if pred >= 0.5 else "negativo"
 
-        # 4. Calcular nivel de confianza
         confianza = float(pred if pred >= 0.5 else 1 - pred)
 
-        # Formatear la respuesta
         return (
             jsonify(
                 {
@@ -207,6 +193,5 @@ def index():
 
 
 if __name__ == "__main__":
-    # Para desarrollo local
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
