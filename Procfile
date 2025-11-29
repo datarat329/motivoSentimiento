@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0:8000 --workers 1 --timeout 120 api.app:app
+web: sh -c 'gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --graceful-timeout 300 --log-level info --access-logfile - --error-logfile - --preload api.app:app'
