@@ -30,7 +30,6 @@ logger.info("=" * 60)
 logger.info(f"Directorio de trabajo: {os.getcwd()}")
 logger.info(f"MODEL_PATH: {MODEL_PATH}")
 logger.info(f"VOCABULARY_PATH: {VOCABULARY_PATH}")
-logger.info(f"Puerto: {os.environ.get('PORT', '8080')}")
 logger.info(f"Python: {sys.version.split()[0]}")
 logger.info(f"TensorFlow: {tf.__version__}")
 logger.info("=" * 60)
@@ -290,6 +289,6 @@ def predict():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = 8000
     logger.info(f"Iniciando servidor en puerto {port}...")
     app.run(host="0.0.0.0", port=port, debug=False)
