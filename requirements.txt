@@ -1,6 +1,6 @@
-flask==3.0.0
-gunicorn==21.2.0
-tensorflow==2.18.0
-numpy==1.26.4
-requests==2.31.0
-h5py==3.11.0
+flask==
+gunicorn
+tensorflow
+numpy
+requests
+h5py
