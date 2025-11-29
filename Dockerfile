@@ -14,7 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-COPY api/ ./api/
+COPY ./api/ /app
 COPY modelo_sentimiento/ ./modelo_sentimiento/
 
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:8000 --workers 1 --timeout 300 --preload api.app:app"]
+CMD ["python", "app.py"]
