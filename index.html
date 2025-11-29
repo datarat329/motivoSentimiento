@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clasificador de Sentimiento AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Estilos personalizados para la transición */
+      .result-box {
+        transition: all 0.3s ease-in-out;
+      }
+      /* Color para Positivo */
+      .bg-positive {
+        background-color: #38a169; /* Verde (Emerald-600) */
+      }
+      /* Color para Negativo */
+      .bg-negative {
+        background-color: #e53e3e; /* Rojo (Red-600) */
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white shadow-xl rounded-lg p-6 sm:p-8">
+      <header class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+          Análisis de Sentimiento AI
+        </h1>
+        <p class="text-gray-500 mt-1">Ingresa tu reseña para clasificarla.</p>
+      </header>
+
+      <form id="sentiment-form" class="space-y-4">
+        <textarea
+          id="review-text"
+          rows="4"
+          placeholder="Escribe aquí tu reseña de película..."
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-700 resize-none"
+          required
+        ></textarea>
+
+        <button
+          type="submit"
+          id="submit-button"
+          class="w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        >
+          Analizar Sentimiento
+        </button>
+      </form>
+
+      <div id="result-container" class="mt-6">
+        <div id="loading-spinner" class="hidden text-center">
+          <div
+            class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-10 w-10 mx-auto mb-3"
+          ></div>
+          <p class="text-blue-600">Analizando...</p>
+        </div>
+
+        <div
+          id="result-box"
+          class="result-box hidden p-4 sm:p-6 rounded-lg text-white shadow-md"
+        >
+          <h2 class="text-xl font-bold mb-2">Resultado del Análisis</h2>
+          <div class="space-y-2">
+            <p class="flex justify-between items-center text-lg">
+              <span>Sentimiento:</span>
+              <span
+                id="sentiment-output"
+                class="font-extrabold text-2xl"
+              ></span>
+            </p>
+            <p class="flex justify-between items-center">
+              <span>Probabilidad:</span>
+              <span id="probability-output" class="font-semibold"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .loader {
+        border-top-color: #3b82f6; /* Tailwind blue-500 */
+        -webkit-animation: spin 1s linear infinite;
+        animation: spin 1s linear infinite;
+      }
+
+      @-webkit-keyframes spin {
+        0% {
+          -webkit-transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+
+    <script>
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!! MODIFICA ESTA URL con la de tu API desplegada !!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      const API_URL = "http://localhost:5000/predict"; // URL de prueba local
+
+      const form = document.getElementById("sentiment-form");
+      const reviewText = document.getElementById("review-text");
+      const submitButton = document.getElementById("submit-button");
+      const loadingSpinner = document.getElementById("loading-spinner");
+      const resultBox = document.getElementById("result-box");
+      const sentimentOutput = document.getElementById("sentiment-output");
+      const probabilityOutput = document.getElementById("probability-output");
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const text = reviewText.value.trim();
+        if (!text) return;
+
+        // 1. Mostrar estado de carga
+        resultBox.classList.add("hidden");
+        loadingSpinner.classList.remove("hidden");
+        submitButton.disabled = true;
+        submitButton.textContent = "Procesando...";
+
+        try {
+          // 2. Enviar solicitud a la API
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ texto: text }),
+          });
+
+          const data = await response.json();
+
+          // 3. Ocultar carga y mostrar resultados
+          loadingSpinner.classList.add("hidden");
+          resultBox.classList.remove("hidden");
+
+          if (response.ok) {
+            const sentiment = data.sentimiento.toUpperCase();
+            const probability = data.probabilidad_positiva;
+
+            sentimentOutput.textContent = sentiment;
+            probabilityOutput.textContent = `${(probability * 100).toFixed(
+              2
+            )}%`;
+
+            // Configurar colores basados en el resultado
+            resultBox.classList.remove("bg-positive", "bg-negative");
+            if (sentiment === "POSITIVO") {
+              resultBox.classList.add("bg-positive");
+            } else {
+              resultBox.classList.add("bg-negative");
+            }
+          } else {
+            // Manejar errores de la API (ej: error 400 o 500)
+            sentimentOutput.textContent = "ERROR";
+            probabilityOutput.textContent = data.error || "Fallo de conexión";
+            resultBox.classList.remove("bg-positive", "bg-negative");
+            resultBox.classList.add("bg-red-500");
+          }
+        } catch (error) {
+          // Manejar errores de red/conexión
+          loadingSpinner.classList.add("hidden");
+          resultBox.classList.remove("hidden");
+          sentimentOutput.textContent = "ERROR";
+          probabilityOutput.textContent = "Verifica la URL de la API.";
+          resultBox.classList.remove("bg-positive", "bg-negative");
+          resultBox.classList.add("bg-gray-500");
+        } finally {
+          // 4. Restablecer botón
+          submitButton.disabled = false;
+          submitButton.textContent = "Analizar Sentimiento";
+        }
+      });
+    </script>
+  </body>
+</html>
