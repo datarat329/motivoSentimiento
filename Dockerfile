@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY api/ ./api/
 
+COPY start.sh .
+RUN chmod +x start.sh
+
 COPY modelo_sentimiento/ ./modelo_sentimiento/
 
 RUN echo "=== Verificando estructura de archivos ===" && \
@@ -29,9 +32,9 @@ RUN echo "=== Verificando estructura de archivos ===" && \
     ls -la modelo_sentimiento/ && \
     echo "=== Verificación completada ==="
 
-EXPOSE 8080
+EXPOSE $PORT
 
-CMD gunicorn --bind 0.0.0.0:$PORT \
+CMD gunicorn --bind "0.0.0.0:${PORT}" \
     --workers 1 \
     --timeout 300 \
     --graceful-timeout 300 \
