@@ -1,6 +1,5 @@
 __pycache__/
 *.pyc
-modelo_sentimiento/
 venv/
 .env
 *.log
