@@ -17,4 +17,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY api/ ./api/
 COPY modelo_sentimiento/ ./modelo_sentimiento/
 
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --preload api.app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:8000 --workers 1 --timeout 300 --preload api.app:app"]
