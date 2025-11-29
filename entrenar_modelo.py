@@ -2,7 +2,8 @@ import sys
 import os
 import tensorflow as tf
 
-os.environ["PYTHONIOENCODING"] = "utf-8"
+os.environ["PYTHONIOENENCODING"] = "utf-8"
+
 if sys.stdout.encoding != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
@@ -11,17 +12,16 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.datasets import imdb
 import numpy as np
 
-# --- Configuración ---
+print(f"TensorFlow version: {tf.__version__}")
+
 VOCAB_SIZE = 10000
 MAX_SEQUENCE_LENGTH = 100
 EMBEDDING_DIM = 16
 OUTPUT_DIR = "modelo_sentimiento"
-
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 print("1. Cargando y preparando el dataset IMDB...")
 (x_train_int, y_train), (x_test_int, y_test) = imdb.load_data(num_words=VOCAB_SIZE)
-
 word_index = imdb.get_word_index()
 index_to_word = {v + 3: k for k, v in word_index.items()}
 index_to_word[0] = "[PAD]"
@@ -51,63 +51,63 @@ vectorize_layer = layers.TextVectorization(
     output_sequence_length=MAX_SEQUENCE_LENGTH,
     standardize=custom_standardization,
 )
-
 vectorize_layer.adapt(tf.data.Dataset.from_tensor_slices(x_train_text))
 
 print("3. Construyendo y compilando el modelo...")
 model = models.Sequential(
     [
-        layers.Input(shape=(MAX_SEQUENCE_LENGTH,)),
-        layers.Embedding(VOCAB_SIZE, EMBEDDING_DIM),
+        layers.Embedding(
+            input_dim=VOCAB_SIZE,
+            output_dim=EMBEDDING_DIM,
+            input_length=MAX_SEQUENCE_LENGTH,
+        ),
         layers.GlobalAveragePooling1D(),
         layers.Dense(16, activation="relu"),
         layers.Dense(1, activation="sigmoid"),
     ]
 )
-
 model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 print("4. Iniciando entrenamiento (3 épocas)...")
 x_train_sequences = vectorize_layer(x_train_text).numpy()
-
 model.fit(
     x_train_sequences, y_train, epochs=3, batch_size=32, validation_split=0.2, verbose=1
 )
 
 print("5. Guardando modelos...")
-
 try:
-    vectorizer_model = tf.keras.Sequential(
-        [tf.keras.Input(shape=(1,), dtype=tf.string), vectorize_layer]
-    )
+    vocab = vectorize_layer.get_vocabulary()
+    vocab_path = f"{OUTPUT_DIR}/vocabulary.txt"
+    with open(vocab_path, "w", encoding="utf-8") as f:
+        for word in vocab:
+            f.write(word + "\n")
+    print(f"Vocabulario guardado: {vocab_path}")
 
-    vectorizer_model.save(f"{OUTPUT_DIR}/vectorizer", save_format="tf")
-    print("✓ Vectorizador guardado exitosamente en formato SavedModel")
-
-    model.save(f"{OUTPUT_DIR}/classifier.keras")
-    print("✓ Clasificador guardado exitosamente")
+    classifier_path = f"{OUTPUT_DIR}/classifier.keras"
+    model.save(classifier_path, save_format="keras_v3")
+    print(f"Clasificador guardado: {classifier_path}")
 
 except Exception as e:
     print(f"Error al guardar: {e}")
+    import traceback
 
-    print("\nIntentando método alternativo...")
-    try:
-        vocab = vectorize_layer.get_vocabulary()
-        with open(f"{OUTPUT_DIR}/vocabulary.txt", "w", encoding="utf-8") as f:
-            for word in vocab:
-                f.write(word + "\n")
-        model.save(f"{OUTPUT_DIR}/classifier.keras")
-
-        print("Vocabulario y clasificador guardados con método alternativo")
-        print(f"  - Vocabulario: {OUTPUT_DIR}/vocabulary.txt")
-        print(f"  - Clasificador: {OUTPUT_DIR}/classifier.keras")
-
-    except Exception as e2:
-        print(f"Error en método alternativo: {e2}")
+    traceback.print_exc()
 
 print("\n6. Evaluando en datos de prueba...")
 x_test_sequences = vectorize_layer(x_test_text).numpy()
 test_loss, test_acc = model.evaluate(x_test_sequences, y_test, verbose=0)
 print(f"Precisión en test: {test_acc:.4f}")
 
-print("\n✓ Proceso completado exitosamente.")
+print("\n7. Probando predicción...")
+test_texts = [
+    "This movie was absolutely fantastic!",
+    "Terrible waste of time, do not watch.",
+]
+for text in test_texts:
+    text_vec = vectorize_layer(np.array([text])).numpy()
+    pred = model.predict(text_vec, verbose=0)[0][0]
+    sentiment = "positivo" if pred >= 0.5 else "negativo"
+    print(f"Texto: '{text}'")
+    print(f"Predicción: {sentiment} (confianza: {pred:.4f})\n")
+
+print("Proceso completado exitosamente.")
