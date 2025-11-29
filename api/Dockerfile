@@ -5,8 +5,11 @@ ENV APP_HOME /app
 
 WORKDIR $APP_HOME
 
-RUN apt-get update && apt-get clean
-
+RUN apt-get update && apt-get install -y \
+    libgomp1 \
+    libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+    
 COPY api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
