@@ -6,8 +6,8 @@ import os
 
 app = Flask(__name__)
 
-MODEL_PATH = "../modelo_sentimiento/classifier.keras"
-VOCABULARY_PATH = "../modelo_sentimiento/vocabulary.txt"
+MODEL_PATH = "modelo_sentimiento/classifier.keras"
+VECTORIZER_PATH = "modelo_sentimiento/vectorizer.keras"
 
 MAX_SEQUENCE_LENGTH = 100
 VOCAB_SIZE = 10000
