@@ -165,27 +165,7 @@ loading_thread.start()
 
 @app.route("/", methods=["GET"])
 def index():
-    return (
-        jsonify(
-            {
-                "service": "API de Análisis de Sentimientos",
-                "version": "1.0.0",
-                "status": "online" if models_loaded else "degraded",
-                "models_loaded": models_loaded,
-                "endpoints": {
-                    "/": "GET - Información de la API",
-                    "/health": "GET - Estado de salud",
-                    "/predict": "POST - Predicción de sentimiento",
-                },
-                "ejemplo": {
-                    "endpoint": "/predict",
-                    "method": "POST",
-                    "body": {"texto": "This movie was absolutely fantastic!"},
-                },
-            }
-        ),
-        200,
-    )
+    return render_template("index.html")
 
 
 @app.route("/health", methods=["GET"])
